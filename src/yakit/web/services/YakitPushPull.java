@@ -36,12 +36,10 @@ public class YakitPushPull extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		//System.out.println("Do Get");
 		YaKitDerbyDB database = YaKitDerbyDB.getInstance();
 		database.initialize();
 		String operation = request.getParameter("operation");
 		if(operation.equals("createnewkey")){
-			//System.out.println("Do Get:: Create New Appkey");
 			int newKey = database.getKey();
 			database.insertAppKey(newKey);
 			response.getWriter().write(""+newKey);
@@ -53,26 +51,25 @@ public class YakitPushPull extends HttpServlet {
 			 * 2. get the uri or file location
 			 * 3. write the bytes to the response stream
 			 */
-			//System.out.println("Do Get:: Get File");
+			
 			int appKey = (new Integer(request.getParameter("appkey"))).intValue();
 			String fileLoc = database.popFileLocation(appKey);
 			database.showTable("applicationchannelfiles");
 			
 			if(fileLoc!=null){
-				FileInputStream fis = new FileInputStream(fileLoc);
-				//System.out.println("Read file from "+fileLoc);
+				File file = new File(fileLoc);
+				FileInputStream fis = new FileInputStream(file);
+				
 				byte[] buffer = new byte[512];
 				int bytesRead = fis.read(buffer);
-				//int offset=0;
+				
 			    while(bytesRead>0){
-			    	//System.out.println("Read in "+bytesRead+" from file "+offset+" Read so far");
 			    	response.getOutputStream().write(buffer,0, bytesRead);
-			    	//response.getOutputStream().write(buffer);
-			    	//offset+=bytesRead;
 			    	bytesRead = fis.read(buffer);
 			    }
 			    fis.close();
 			    response.getOutputStream().close();
+			    file.delete();
 			}else{
 				System.out.println("no file found with appkey:"+appKey);
 			}
@@ -93,15 +90,14 @@ public class YakitPushPull extends HttpServlet {
 	 */
 	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		//System.out.println("Do Put");
+		
 		YaKitDerbyDB database = YaKitDerbyDB.getInstance();
 		database.initialize();
 		String contentType = request.getHeader("Content-Type");
 		String contentName = request.getHeader("FileName");
 		String contentNameFix=YaKitUtils.getInstance().getFileName(contentName);
-		//System.out.println("Sent "+contentName+" changed to "+contentNameFix);
 		int appKey = (new Integer(request.getHeader("AppKey"))).intValue();
-		//System.out.println("Do Put:: write File "+contentName+" of type "+contentType+" appkey "+appKey);
+		
 		/*
 		 * 1. Get file name from header
 		 * 2. create the file
@@ -113,13 +109,13 @@ public class YakitPushPull extends HttpServlet {
 		int bytesRead = is.read( buffer ) ;
 		int offset=0;
 		while(bytesRead>0){
-			//System.out.println("Read in "+bytesRead+" insert at current offset "+offset);
 			fos.write(buffer,0, bytesRead);
 	    	offset+=bytesRead;
 			bytesRead = is.read( buffer ) ;
 		}
 		fos.close();
 		is.close();
+		
 		database.pushFileLocation(appKey,request.getRemoteAddr(), contentType, filedir+contentNameFix);
 		database.showTable("applicationchannelfiles");
 		response.getWriter().write("File "+contentName+" successfully pushed to Push/Pop Service wrote "+offset+" bytes\n");

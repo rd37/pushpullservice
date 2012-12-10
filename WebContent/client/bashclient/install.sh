@@ -39,6 +39,7 @@ then
  	fi
 fi
 
+cp config.cfg /etc/config.cfg
 echo "generate pop.sh and push.sh scripts";
 
 if [ -a push.sh ]
@@ -52,7 +53,7 @@ echo '#!/bin/bash' >> push.sh;
 echo 'address="http://yakit.ca"' >> push.sh;
 dir=`pwd`;
 echo -n 'key=`cat ' >> push.sh;
-echo -n $dir >> push.sh;
+echo -n '/etc' >> push.sh;
 echo '/config.cfg`;' >> push.sh
 echo 'echo "$key";' >> push.sh;
 
@@ -62,7 +63,7 @@ echo 'curl -X PUT --data-binary "@$1" --header "Content-Type: text/plain" --head
 echo 'fi' >> push.sh;
 
 chmod +x push.sh;
-ln -F -f  push.sh /usr/local/bin/push.sh;
+cp  push.sh /usr/local/bin/push.sh;
 
 if [ -a pop.sh ]
 then
@@ -75,7 +76,7 @@ echo '#!/bin/bash' >> pop.sh;
 echo 'address="http://yakit.ca"' >> pop.sh;
 dir=`pwd`;
 echo -n 'key=`cat ' >> pop.sh;
-echo -n $dir >> pop.sh;
+echo -n '/etc' >> pop.sh;
 echo '/config.cfg`;' >> pop.sh
 echo 'echo "$key";' >> pop.sh;
 
@@ -87,4 +88,4 @@ echo '   wget -O "$1" "$address/YakitsPushPull/YakitPushPull?operation=getfile&a
 echo 'fi' >> pop.sh;
 
 chmod +x pop.sh
-ln -F -f  pop.sh /usr/local/bin/pop.sh;
+cp  pop.sh /usr/local/bin/pop.sh;
